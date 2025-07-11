@@ -13,6 +13,7 @@ Features:
 - Recursively rename files in a directory, with options to strip prefixes, postfixes, or remove substrings.
 - Optionally clean up filenames by removing common media tags and replacing underscores, dashes, and dots with spaces.
 - Optionally, after renaming, create a folder for each file (named after the file, minus extension) and move the file into its new folder.
+- Optionally, organize TV episodes into season folders based on SxxExx patters
 
 Usage Example:
     python media-managed.py /home/awesome/yourtargetfolder --prefix "DRAFT-" --clean --mkfolders
@@ -64,6 +65,42 @@ def move_files_to_individual_folders(target_folder, dry_run=False):
         else:
             print(f"Skipping directory: {filename}\n")
     print("Move-to-folder operation complete!")
+
+def organize_by_season(target_directory, dry_run=False):
+    """
+    Scan the target directory for files matching the pattern SxxExx (case-insensitive),
+    create season folders (e.g., 'Season 1'), and move files into their respective
+    season folders based on the number found in the filename.
+    """
+    print(f"Scanning '{target_directory}' for season/episode patterns...\n")
+    pattern = re.compile(r'[Ss](\d{1,2})[Ee](\d{1,2})')
+    try:
+        all_items = os.listdir(target_directory)
+    except FileNotFoundError:
+        print(f"Error: The folder '{target_directory}' does not exist.")
+        return
+    moved_count = 0
+    for filename in all_items:
+        full_path = os.path.join(target_directory, filename)
+        if os.path.isfile(full_path):
+            match = pattern.search(filename)
+            if match:
+                season_num = int(match.group(1))
+                season_folder = os.path.join(target_directory, f"Season {season_num}")
+                dest_path = os.path.join(season_folder, filename)
+                if not os.path.exists(season_folder):
+                    if dry_run:
+                        print(f"  - [DRY RUN] Would have created folder: {season_folder}")
+                    else:
+                        os.makedirs(season_folder)
+                        print(f"  -> Created folder: {season_folder}")
+                if dry_run:
+                    print(f"  - [DRY RUN] Would move '{filename}' to '{season_folder}/'")
+                else:
+                    shutil.move(full_path, dest_path)
+                    print(f"  -> Moved '{filename}' to '{season_folder}/'")
+                moved_count += 1
+    print(f"\nSeason organization complete! {moved_count} file(s) processed.")
 
 
 def process_filename(filename, prefix=None, postfix=None, remove_str=None, perform_clean=False):
@@ -178,13 +215,14 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--remove", dest="remove_str", help="A string to remove from anywhere within filenames.")
     parser.add_argument("-m", "--mkfolders", action="store_true", help="For each file, create a folder (named after the file, minus extension) and move the file into it after renaming/cleaning.")
     parser.add_argument("-c", "--clean", action="store_true", help="Perform a general cleanup (replaces '_', '.', '-' with spaces and removes common unwanted strings).")
+    parser.add_argument("-b", "--by-season", action="store_true", help="Organize files into season folders if filename matches SxxExx pattern.")
     parser.add_argument("-d", "--dry-run", action="store_true", help="Show what would happen, but don't actually rename or move any files.")
 
     args = parser.parse_args()
 
     # Make sure at least one action is selected
-    if not any([args.prefix, args.postfix, args.remove_str, args.clean, args.mkfolders]):
-        print("Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, or --mkfolders.")
+    if not any([args.prefix, args.postfix, args.remove_str, args.clean, args.mkfolders, args.by_season]):
+        print("Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, --mkfolders, or --by-season.")
         parser.print_help()
         sys.exit(1)
 
@@ -201,3 +239,7 @@ if __name__ == "__main__":
     # Then, move files into individual folders if requested
     if args.mkfolders:
         move_files_to_individual_folders(args.directory, dry_run=args.dry_run)
+
+    # Organize files into season filers if requested
+    if args.by_season:
+        organize_by_season(args.directory, dry_run=args.dry_run)
