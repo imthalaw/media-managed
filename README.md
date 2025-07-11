@@ -9,6 +9,7 @@ A flexible and scriptable tool for batch renaming and organizing media files.
 - **Batch rename** files in a directory (recursively), with options to strip prefixes, postfixes, or any substring.
 - **Cleanup** filenames by removing common media tags and replacing underscores, dashes, and dots with spaces.
 - **Optionally organize**: After renaming, create a folder for each file (named after the file, minus extension) and move the file into its own folder.
+- **Organize by season**: Move files into folders like 'Season 1' if their names contain the S01E01 pattern.
 - **Dry run mode**: Preview changes before making them.
 
 ---
@@ -47,9 +48,14 @@ python media-managed.py DIRECTORY [options]
     python media-managed.py ./movies --remove "_scene" --mkfolders
     ```
 
+- Organize TV episodes into season folders:
+    ```bash
+    python media-managed.py ./shows --by-season
+    ```
+
 - Preview what would happen (dry run):
     ```bash
-    python media-managed.py ./shows --clean --mkfolders --dry-run
+    python media-managed.py ./shows --clean --mkfolders --by-season --dry-run
     ```
 
 ---
@@ -63,6 +69,7 @@ python media-managed.py DIRECTORY [options]
 | `-r`, `--remove`   | Substring to remove from anywhere in filenames.                                                |
 | `-c`, `--clean`    | Cleanup: replace `_`, `.`, and `-` with spaces; remove common media tags (e.g. "web-dl", etc). |
 | `-m`, `--mkfolders`| After renaming/cleaning, move each file into its own folder (named after the file, minus ext).  |
+| `-b`, `--by-season`| Organize files into season folders if filename matches SxxExx pattern.                         |
 | `-d`, `--dry-run`  | Show what would happen, but don’t actually rename or move any files.                           |
 
 ---
@@ -72,6 +79,7 @@ python media-managed.py DIRECTORY [options]
 - **Order of Operations:**
     1. Renames/cleans files as specified (recursively).
     2. If `--mkfolders` is set, moves each file into a new folder named after the file (without extension).
+    3. If `--by-season` is set, moves files with SxxExx in name into their season folder.
 
 - **Common tags cleaned with `--clean`:**  
   `web-dl`, `blueray`, `webrip`, `hdr`, `hevc`, `av1`, `opus`, `h265`, `x265`, `x264`, `h264`, and more.
