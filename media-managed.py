@@ -140,9 +140,9 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
 
         # Remove common unwanted strings (case-insensitive)
         chars_to_remove = [
-            'web-dl', 'blueray', 'dd5.1', 'cmrg',
+            'web-dl', 'blueray', 'bluray', 'dd5.1', 'cmrg',
             '[tgx]', 'hevc', 'webrip', 'hdr', 'av1', 'opus',
-            '5.1', 'h265', 'x265', 'x264', 'h264'
+            '5.1', 'h265', 'x265', 'x264', 'h264', 'yify', 'av1'
         ]
         pattern_to_remove = r'|'.join([re.escape(s) for s in sorted(chars_to_remove, key=len, reverse=True)])
         new_name_part = re.sub(pattern_to_remove, '', new_name_part, flags=re.IGNORECASE)
