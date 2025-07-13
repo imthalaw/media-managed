@@ -16,7 +16,7 @@ A flexible and scriptable tool for batch renaming and organizing media files.
 
 ## Why use `media-managed`?
 
-Messy filenames and cluttered downloads are a pain—especially for media collectors, archivists, and data wranglers. `media-managed` helps you quickly clean up and organize your files, with a single command, and full control over how things are processed.
+Messy filenames and cluttered downloads are a pain - especially for media collectors, archivists, and data wranglers. `media-managed` helps you quickly clean up and organize your files, with a single command, and full control over how things are processed.
 
 ---
 
