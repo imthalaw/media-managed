@@ -138,6 +138,18 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
         # Replace characters like _, ., - with a space
         new_name_part = re.sub(r'[_.\-]+', ' ', new_name_part)
 
+        # Standardize season/episode format (e.g., 1x02, s1e2 -> S01E02)
+        def standardize_episode_format(match):
+            # Takes captured season and episode numbers
+            season_num =int(match.group(1))
+            episode_num = int(match.group(2))
+            # Then formats them into the SxxExx standard with leading zeros
+            return f"S{season_num:02d}E{episode_num:02d}"
+
+        # This pattern finds formats like 's01e02', 'S1E2', '1x02', or '1x2'
+        pattern_to_standardize = r'[Ss]?(\d{1,2})[xXeE](\d{1,2})'
+        new_name_part = re.sub(pattern_to_standardize, standardize_episode_format, new_name_part, flags=re.IGNORECASE)
+
         # Remove common unwanted strings (case-insensitive)
         chars_to_remove = [
             'web-dl', 'blueray', 'bluray', 'dd5.1', 'cmrg',
