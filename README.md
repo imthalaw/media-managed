@@ -47,7 +47,7 @@ python media-managed.py DIRECTORY [options]
 
 - Strip `DRAFT-` prefix from all files and clean up common tags:
     ```bash
-    python media-managed.py ./downloads --prefix "DRAFT-" --clean
+    python media-managed.py ./downloads -refix "DRAFT-" --clean
     ```
 
 - Remove all `_scene` substrings and move each file into its own folder:
@@ -67,7 +67,7 @@ python media-managed.py DIRECTORY [options]
 
 - Also process directory names:
     ```bash
-    python media-managed.py ./media --clean --process-dirs
+    python media-managed.py ./media --clean -rocess-dirs
     ```
 
 ---
@@ -83,7 +83,7 @@ python media-managed.py DIRECTORY [options]
 | `-m`, `--mkfolders`  | After renaming/cleaning, move each file into its own folder (named after the file, minus ext).        |
 | `-b`, `--by-season`  | Organize files into season folders if filename matches SxxExx pattern.                               |
 | `-d`, `--dry-run`    | Show what would happen, but don’t actually rename or move any files.                                 |
-| `--process-dirs`     | Apply renaming/cleaning logic to directory names as well as files.                                   |
+| `-P', '--process-dirs`     | Apply renaming/cleaning logic to directory names as well as files.                             |
 
 ---
 
