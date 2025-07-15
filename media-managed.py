@@ -272,7 +272,7 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--remove", dest="remove_str", help="A string to remove from anywhere within filenames.")
     parser.add_argument("-m", "--mkfolders", action="store_true", help="For each file, create a folder (named after the file, minus extension) and move the file into it after renaming/cleaning.")
     parser.add_argument("-c", "--clean", action="store_true", help="Perform a general cleanup (replaces '_', '.', '-' with spaces and removes common unwanted strings).")
-    parser.add_argument("-p", "--process-dirs", action="store_true", help="Also apply renaming logic to directory and subdirectory names.")
+    parser.add_argument("--pd", "--process-dirs", action="store_true", help="Also apply renaming logic to directory and subdirectory names.")
     parser.add_argument("-b", "--by-season", action="store_true", help="Organize files into season folders if filename matches SxxExx pattern.")
     parser.add_argument("-d", "--dry-run", action="store_true", help="Show what would happen, but don't actually rename or move any files.")
 
