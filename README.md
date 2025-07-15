@@ -11,6 +11,13 @@ A flexible and scriptable tool for batch renaming and organizing media files.
 - **Optionally organize**: After renaming, create a folder for each file (named after the file, minus extension) and move the file into its own folder.
 - **Organize by season**: Move files into folders like 'Season 1' if their names contain the S01E01 pattern.
 - **Dry run mode**: Preview changes before making them.
+- **Advanced cleaning**: 
+  - Removes curly braces from filenames.
+  - Automatically adds parentheses around years (e.g., 1938 → (1938)).
+  - Ensures resolutions (e.g., 720p, 1080p, 2160p) are shown in brackets `[720p]`.
+  - Standardizes season/episode formats like `1x02`, `s1e2` to `S01E02`.
+  - Removes a wide range of common “junk” media tags and codec/quality indicators.
+- **Process directories**: Optionally apply renaming/cleaning rules to directory names as well as files (using `--process-dirs`).
 
 ---
 
@@ -58,31 +65,43 @@ python media-managed.py DIRECTORY [options]
     python media-managed.py ./shows --clean --mkfolders --by-season --dry-run
     ```
 
+- Also process directory names:
+    ```bash
+    python media-managed.py ./media --clean --process-dirs
+    ```
+
 ---
 
 ## Options
 
-| Option             | Description                                                                                     |
-|--------------------|------------------------------------------------------------------------------------------------|
-| `-p`, `--prefix`   | Prefix to strip from the start of filenames.                                                   |
-| `-s`, `--postfix`  | Postfix to strip from the end of filenames (before extension).                                 |
-| `-r`, `--remove`   | Substring to remove from anywhere in filenames.                                                |
-| `-c`, `--clean`    | Cleanup: replace `_`, `.`, and `-` with spaces; remove common media tags (e.g. "web-dl", etc). |
-| `-m`, `--mkfolders`| After renaming/cleaning, move each file into its own folder (named after the file, minus ext).  |
-| `-b`, `--by-season`| Organize files into season folders if filename matches SxxExx pattern.                         |
-| `-d`, `--dry-run`  | Show what would happen, but don’t actually rename or move any files.                           |
+| Option               | Description                                                                                           |
+|----------------------|------------------------------------------------------------------------------------------------------|
+| `-p`, `--prefix`     | Prefix to strip from the start of filenames.                                                         |
+| `-s`, `--postfix`    | Postfix to strip from the end of filenames (before extension).                                       |
+| `-r`, `--remove`     | Substring to remove from anywhere in filenames.                                                      |
+| `-c`, `--clean`      | Cleanup: replace `_`, `.`, and `-` with spaces; remove common media tags (e.g. "web-dl", etc).       |
+| `-m`, `--mkfolders`  | After renaming/cleaning, move each file into its own folder (named after the file, minus ext).        |
+| `-b`, `--by-season`  | Organize files into season folders if filename matches SxxExx pattern.                               |
+| `-d`, `--dry-run`    | Show what would happen, but don’t actually rename or move any files.                                 |
+| `--process-dirs`     | Apply renaming/cleaning logic to directory names as well as files.                                   |
 
 ---
 
 ## How does it work?
 
 - **Order of Operations:**
-    1. Renames/cleans files as specified (recursively).
+    1. Renames/cleans files (and optionally directories) as specified, recursively.
     2. If `--mkfolders` is set, moves each file into a new folder named after the file (without extension).
     3. If `--by-season` is set, moves files with SxxExx in name into their season folder.
 
-- **Common tags cleaned with `--clean`:**  
-  `web-dl`, `blueray`, `webrip`, `hdr`, `hevc`, `av1`, `opus`, `h265`, `x265`, `x264`, `h264`, and more.
+- **Cleaning details (`--clean`):**  
+  - Replaces `_`, `.`, and `-` with spaces.
+  - Standardizes season/episode notations to `SxxEyy`.
+  - Removes common tags: `web-dl`, `blueray`, `webrip`, `hdr`, `hevc`, `av1`, `opus`, `h265`, `x265`, `x264`, `h264`, `yify`, `dvdrip`, `xvid`, `sfm`, `ac1`, `ac2`, `ac3`, `fov`, `vfua`, and more.
+  - Removes curly braces.
+  - Adds parentheses around year patterns (e.g., 1938 → (1938)), only if not already in parentheses.
+  - Formats resolutions as `[720p]`, `[1080p]`, `[2160p]`.
+  - Trims and consolidates spaces.
 
 ---
 
