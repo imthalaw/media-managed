@@ -103,7 +103,7 @@ def organize_by_season(target_directory, dry_run=False):
     print(f"\nSeason organization complete! {moved_count} file(s) processed.")
 
 
-def process_filename(filename, prefix=None, postfix=None, remove_str=None, perform_clean=False):
+def process_filename(filename, prefix=None, postfix=None, remove_str=None, perform_clean=False, is_dir=False):
     """
     Modifies a filename by stripping text or cleaning characters.
     Order of operations: 1. Prefix, 2. Postfix, 3. Remove, 4. Clean.
@@ -118,7 +118,12 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
     Returns:
         str: The new, processed filename.
     """
-    name_part, extension = os.path.splitext(filename)
+    if is_dir:
+        name_part = filename
+        extension = ""
+    else:
+        name_part, extension = os.path.splitext(filename)
+    
     new_name_part = name_part
 
     # 1. Strip the prefix (from the beginning)
@@ -152,7 +157,7 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
 
         # Remove common unwanted strings (case-insensitive)
         chars_to_remove = [
-            'web-dl', 'blueray', 'bluray', 'dd5.1', 'cmrg',
+            'web', 'webrip', 'web-dl', 'blueray', 'bluray', 'dd5.1', 'cmrg',
             '[tgx]', 'hevc', 'webrip', 'hdr', 'av1', 'opus',
             '5.1', 'h265', 'x265', 'x264', 'h264', 'yify',
             'dvdrip', 'xvid', 'sfm', 'ac1', 'ac2', 'ac3',
@@ -182,7 +187,7 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
     else:
         return filename
 
-def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=None, perform_clean=False, dry_run=False):
+def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=None, perform_clean=False, process_dirs=False, dry_run=False):
     """
     Recursively renames files based on the provided operations.
     """
@@ -199,12 +204,19 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
         print(f" - Will remove all instances of: '{remove_str}'")
     if perform_clean:
         print(f" - Will perform general filename cleaning.")
+    if process_dirs:
+        print(f" - Will also apply renaming logic to DIRECTORY names.")
     print("-" * 20)
 
     renamed_files_count = 0
-    for root, dirs, files in os.walk(directory):
+    renamed_dirs_count = 0
+
+    # Using topdown=False to rename items from the deepest level first.
+    # This will prevent errors when renaming a parent directory before its children
+    for root, dirs, files in os.walk(directory, topdown=False):
+        # 1. Process files in the current directory
         for filename in files:
-            new_filename = process_filename(filename, prefix, postfix, remove_str, perform_clean)
+            new_filename = process_filename(filename, prefix, postfix, remove_str, perform_clean, is_dir=False)
             if new_filename != filename:
                 old_filepath = os.path.join(root, filename)
                 new_filepath = os.path.join(root, new_filename)
@@ -223,13 +235,35 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
                     except OSError as e:
                         print(f"  - Error renaming '{filename}': {e}")
 
+        # 2. Process subdirectories in the current directory if flag is set
+        if process_dirs:
+            for dirname in dirs:
+                new_dirname = process_filename(dirname, prefix, postfix, remove_str, perform_clean, is_dir=True)
+                if new_dirname != dirname:
+                    old_dirpath = os.path.join(root, dirname)
+                    new_dirpath = os.path.join(root, new_dirname)
+
+                if os.path.exists(new_dirpath):
+                    print(f"  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
+                    continue
+            if dry_run:
+                print(f" - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
+            else:
+                try:
+                    os.rename(old_dirpath, new_dirpath)
+                    print(f" - Renamed DIR: '{dirname}' -> '{new_dirname}'")
+                    renamed_dirs_count += 1
+                except OSError as e:
+                    print(f"  - Error renaming directory '{dirname}': {e}")
+                
+
     print("-" * 20)
-    print(f"\nScan complete. Renamed {renamed_files_count} file(s).")
+    print(f"\nScan complete. Renamed {renamed_files_count} file(s) and {renamed_dirs_count} directory/subdirectories.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Recursively strip prefixes, postfixes, or any substring from filenames.",
-        epilog="Example: python media-managed.py ./my_files --prefix \"DRAFT-\" --clean"
+        description="Recursively strip prefixes, postfixes, or any substring from filenames and directories.",
+        epilog="Example: python media-managed.py ~/my_files --prefix \"DRAFT-\" --clean --process-dirs"
     )
 
     parser.add_argument("directory", help="The target directory to scan.")
@@ -238,26 +272,30 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--remove", dest="remove_str", help="A string to remove from anywhere within filenames.")
     parser.add_argument("-m", "--mkfolders", action="store_true", help="For each file, create a folder (named after the file, minus extension) and move the file into it after renaming/cleaning.")
     parser.add_argument("-c", "--clean", action="store_true", help="Perform a general cleanup (replaces '_', '.', '-' with spaces and removes common unwanted strings).")
+    parser.add_argument("-pd", "--process-dirs", action="store_true", help="Also apply renaming logic to directory and subdirectory names.")
     parser.add_argument("-b", "--by-season", action="store_true", help="Organize files into season folders if filename matches SxxExx pattern.")
     parser.add_argument("-d", "--dry-run", action="store_true", help="Show what would happen, but don't actually rename or move any files.")
 
+    
     args = parser.parse_args()
 
     # Make sure at least one action is selected
-    if not any([args.prefix, args.postfix, args.remove_str, args.clean, args.mkfolders, args.by_season]):
-        print("Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, --mkfolders, or --by-season.")
+    if not any([args.prefix, args.postfix, args.remove_str, args.clean, args.mkfolders, args.by_season, args.process_dirs]):
+        print("Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, --process_dirs, --mkfolders, or --by-season.")
         parser.print_help()
         sys.exit(1)
 
-    # First, rename/clean files as requested
-    rename_files_in_directory(
-        args.directory,
-        args.prefix,
-        args.postfix,
-        args.remove_str,
-        args.clean,
-        dry_run=args.dry_run
-    )
+    # First, rename/clean files and or directories as requested
+    if any([args.prefix, args.postfix, args.remove_str, args.clean, args.process_dirs]):
+        rename_files_in_directory(
+            args.directory,
+            prefix=args.prefix,
+            postfix=args.postfix,
+            remove_str=args.remove_str,
+            perform_clean=args.clean,
+            process_dirs=args.process_dirs,
+            dry_run=args.dry_run
+        )
 
     # Then, move files into individual folders if requested
     if args.mkfolders:
