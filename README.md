@@ -38,6 +38,8 @@ Optional color output with colorama, install with:
 
 ```bash
 PIP install colorama
+# or
+PIP install -r requirements.txt
 ```
 
 ---
