@@ -3,6 +3,23 @@ import re
 import sys
 import argparse
 import shutil
+# --- Optional Colorama Import ---
+try:
+    # Attempt to import and initialize colorama
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+except ImportError:
+    # If colorma is not installed, create dummy objects
+    # so the rest of the script doesn't crash.
+    print("Colorama not found. Proceeding without colored output.")
+    class DummyColor:
+        """A dummy class that returns an empty string for any attribute."""
+        def __getattr__(self,name):
+            return ""
+
+    # These dummy objects will be used in place of the real ones
+    Fore = DummyColor()
+    Style = DummyColor()
 
 """
 media-managed.py
@@ -29,7 +46,7 @@ def move_files_to_individual_folders(target_folder, dry_run=False):
     try:
         all_items = os.listdir(target_folder)
     except FileNotFoundError:
-        print(f"Error: The folder '{target_folder}' does not exist.")
+        print(f"{Fore.RED}Error: The folder '{target_folder}' does not exist.")
         return
 
     for filename in all_items:
@@ -44,31 +61,31 @@ def move_files_to_individual_folders(target_folder, dry_run=False):
 
             if not os.path.exists(new_folder_path):
                 if dry_run:
-                    print(f"  - [DRY RUN] Would create folder: {new_folder_path}")
+                    print(f"{Style.DIM}  - [DRY RUN] Would create folder: {new_folder_path}")
                 else:
                     try:
                         os.makedirs(new_folder_path)
-                        print(f"  -> Created folder: {new_folder_path}")
+                        print(f"{Fore.GREEN}  -> Created folder: {new_folder_path}")
                     except OSError as e:
-                        print(f"  -> Error creating folder {new_folder_path}: {e}")
+                        print(f"{Fore.RED}  -> Error creating folder {new_folder_path}: {e}")
                         continue
             else:
-                print(f"  -> Folder '{folder_name}' already exists.")
+                print(f"{Fore.YELLOW}  -> Folder '{folder_name}' already exists.")
 
             if dry_run:
-                print(f"  - [DRY RUN] Would move '{filename}' into '{new_folder_path}'\n")
+                print(f"{Style.DIM}  - [DRY RUN] Would move '{filename}' into '{new_folder_path}'\n")
 
             elif os.path.exists(destination_path):
-                print(f"  -> Skipped (conflict): '{destination_path}' already exists. \n")
+                print(f"{Fore.YELLOW}  -> Skipped (conflict): '{destination_path}' already exists. \n")
             else:
                 try:
                     shutil.move(original_file_path, new_folder_path)
                     print(f"  -> Moved '{filename}' into '{new_folder_path}'\n")
                 except Exception as e:
-                    print(f"  -> Error moving file {filename}: {e}\n")
+                    print(f"{Fore.RED}  -> Error moving file {filename}: {e}\n")
         else:
             print(f"Skipping directory: {filename}\n")
-    print("Move-to-folder operation complete!")
+    print(f"{Fore.GREEN}Move-to-folder operation complete!")
 
 def organize_by_season(target_directory, dry_run=False):
     """
@@ -81,7 +98,7 @@ def organize_by_season(target_directory, dry_run=False):
     try:
         all_items = os.listdir(target_directory)
     except FileNotFoundError:
-        print(f"Error: The folder '{target_directory}' does not exist.")
+        print(f"{Fore.RED}Error: The folder '{target_directory}' does not exist.")
         return
     moved_count = 0
     for filename in all_items:
@@ -94,20 +111,20 @@ def organize_by_season(target_directory, dry_run=False):
                 dest_path = os.path.join(season_folder, filename)
                 if not os.path.exists(season_folder):
                     if dry_run:
-                        print(f"  - [DRY RUN] Would have created folder: {season_folder}")
+                        print(f"{Style.DIM}  - [DRY RUN] Would have created folder: {season_folder}")
                     else:
                         os.makedirs(season_folder)
-                        print(f"  -> Created folder: {season_folder}")
+                        print(f"{Fore.GREEN}  -> Created folder: {season_folder}")
 
                 if os.path.exists(dest_path):
-                    print(f"  -> Skipped (conflict): Destination '{dest_path}' already exists.")
+                    print(f"{Fore.YELLOW}  -> Skipped (conflict): Destination '{dest_path}' already exists.")
                     continue
                 if dry_run:
-                    print(f"  - [DRY RUN] Would move '{filename}' to '{season_folder}/'")
+                    print(f"{Style.DIM}  - [DRY RUN] Would move '{filename}' to '{season_folder}/'")
                     
                 else:
                     shutil.move(full_path, dest_path)
-                    print(f"  -> Moved '{filename}' to '{season_folder}/'")
+                    print(f"{Fore.GREEN}  -> Moved '{filename}' to '{season_folder}/'")
                 moved_count += 1
     print(f"\nSeason organization complete! {moved_count} file(s) processed.")
 
@@ -207,7 +224,7 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
     Recursively renames files based on the provided operations.
     """
     if not os.path.isdir(directory):
-        print(f"Error: Directory not found at '{os.path.abspath(directory)}'")
+        print(f"{Fore.RED}Error: Directory not found at '{os.path.abspath(directory)}'")
         return
 
     print(f"Starting scan in directory: {os.path.abspath(directory)}")
@@ -238,17 +255,17 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
 
                 # Prevent overwriting an existing file
                 if os.path.exists(new_filepath):
-                    print(f"  - Skipped (conflict): Renaming '{filename}' to '{new_filename}' would overwrite an existing file.")
+                    print(f"{Fore.YELLOW}  - Skipped (conflict): Renaming '{filename}' to '{new_filename}' would overwrite an existing file.")
                     continue
                 if dry_run:
-                    print(f"  - [DRY RUN] Would rename: '{filename}' -> '{new_filename}'")
+                    print(f"{Style.DIM}  - [DRY RUN] Would rename: '{filename}' -> '{new_filename}'")
                 else:
                     try:
                         os.rename(old_filepath, new_filepath)
-                        print(f"  - Renamed: '{filename}' -> '{new_filename}'")
+                        print(f"{Fore.GREEN}  - Renamed: '{filename}' -> '{new_filename}'")
                         renamed_files_count += 1
                     except OSError as e:
-                        print(f"  - Error renaming '{filename}': {e}")
+                        print(f"{Fore.RED}  - Error renaming '{filename}': {e}")
 
         # 2. Process subdirectories in the current directory if flag is set
         if process_dirs:
@@ -259,21 +276,21 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
                     new_dirpath = os.path.join(root, new_dirname)
 
                 if os.path.exists(new_dirpath):
-                    print(f"  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
+                    print(f"{Fore.YELLOW}  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
                     continue
             if dry_run:
-                print(f" - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
+                print(f"{Style.DIM} - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
             else:
                 try:
                     os.rename(old_dirpath, new_dirpath)
-                    print(f" - Renamed DIR: '{dirname}' -> '{new_dirname}'")
+                    print(f"{Fore.GREEN} - Renamed DIR: '{dirname}' -> '{new_dirname}'")
                     renamed_dirs_count += 1
                 except OSError as e:
-                    print(f"  - Error renaming directory '{dirname}': {e}")
+                    print(f"{Fore.RED}  - Error renaming directory '{dirname}': {e}")
                 
 
     print("-" * 20)
-    print(f"\nScan complete. Renamed {renamed_files_count} file(s) and {renamed_dirs_count} directory/subdirectories.")
+    print(f"{Fore.GREEN}\nScan complete. Renamed {renamed_files_count} file(s) and {renamed_dirs_count} directory/subdirectories.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -296,7 +313,7 @@ if __name__ == "__main__":
 
     # Make sure at least one action is selected
     if not any([args.prefix, args.postfix, args.remove_str, args.clean, args.mkfolders, args.by_season, args.process_dirs]):
-        print("Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, --process_dirs, --mkfolders, or --by-season.")
+        print(f"{Fore.RED}Error: You must specify at least one operation: --prefix, --postfix, --remove, --clean, --process_dirs, --mkfolders, or --by-season.")
         parser.print_help()
         sys.exit(1)
 
