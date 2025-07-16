@@ -34,6 +34,11 @@ No installation required! Just download `media-managed.py` and run it with Pytho
 ```bash
 python media-managed.py --help
 ```
+Optional color output with colorama, install with:
+
+```bash
+PIP install colorama
+```
 
 ---
 
