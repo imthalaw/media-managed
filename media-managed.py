@@ -40,6 +40,7 @@ def move_files_to_individual_folders(target_folder, dry_run=False):
             print(f"Processing file: {filename}")
             folder_name, file_extension = os.path.splitext(filename)
             new_folder_path = os.path.join(target_folder, folder_name)
+            destination_path = os.path.join(new_folder_path, filename)
 
             if not os.path.exists(new_folder_path):
                 if dry_run:
@@ -56,6 +57,9 @@ def move_files_to_individual_folders(target_folder, dry_run=False):
 
             if dry_run:
                 print(f"  - [DRY RUN] Would move '{filename}' into '{new_folder_path}'\n")
+
+            elif os.path.exists(destination_path):
+                print(f"  -> Skipped (conflict): '{destination_path}' already exists. \n")
             else:
                 try:
                     shutil.move(original_file_path, new_folder_path)
@@ -94,8 +98,13 @@ def organize_by_season(target_directory, dry_run=False):
                     else:
                         os.makedirs(season_folder)
                         print(f"  -> Created folder: {season_folder}")
+
+                if os.path.exists(dest_path):
+                    print(f"  -> Skipped (conflict): Destination '{dest_path}' already exists.")
+                    continue
                 if dry_run:
                     print(f"  - [DRY RUN] Would move '{filename}' to '{season_folder}/'")
+                    
                 else:
                     shutil.move(full_path, dest_path)
                     print(f"  -> Moved '{filename}' to '{season_folder}/'")
