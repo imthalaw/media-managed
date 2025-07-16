@@ -179,15 +179,21 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
         new_name_part = new_name_part.replace('{', '').replace('}', '')
 
         # Add parentheses around the year (e.g., 1938 -> (1938)), only if not already in ()
-        new_name_part = re.sub(r'(?<!\()\b(19[0-9]{2}|20[0-9]{2})\b(?!\))', r'(\1)', new_name_part)
+        new_name_part = re.sub(r'(?<!\()\b(18\d{2}|19[0-9]{2}|20[0-9]{2})\b(?!\))', r'(\1)', new_name_part)
 
-        # Ensure resolution is in brackets [720p], [1080p], [2160p]
+        # Ensure resolution is in brackets [720p], [1080p], [2160p] , and [4k]
         def fix_res(match):
             res = match.group(1)
             return f'[{res}]'
-        new_name_part = re.sub(r'\[?(720p|1080p|2160p)\]?', fix_res, new_name_part, flags=re.IGNORECASE)
+        new_name_part = re.sub(r'\[?(720p|1080p|2160p|4k)\]?', fix_res, new_name_part, flags=re.IGNORECASE)
         
         # Consolidate multiple spaces and trim
+        new_name_part = " ".join(new_name_part.split()).strip()
+
+        # Remove empty brackets/parentheses left over from tag removal and run final whitespace cleanup
+    
+        new_name_part = re.sub(r'\s*\[\s*\]\s*', ' ', new_name_part)
+        new_name_part = re.sub(r'\s*\(\s*\)\s*', ' ', new_name_part)
         new_name_part = " ".join(new_name_part.split()).strip()
 
     # Return the new filename only if a change was made
