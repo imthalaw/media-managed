@@ -278,7 +278,7 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
                 if os.path.exists(new_dirpath):
                     print(f"{Fore.YELLOW}  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
                     continue
-               if dry_run:
+                if dry_run:
                     print(f"{Style.DIM} - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
                 else:
                     try:
