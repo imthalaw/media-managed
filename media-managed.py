@@ -184,7 +184,7 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
         # Remove common unwanted strings (case-insensitive)
         chars_to_remove = [
             'web', 'webrip', 'web-dl', 'blu', 'ray', 'blueray', 'bluray', 'dd5.1', 'cmrg',
-            '[tgx]', 'hevc', 'webrip', 'hdr', 'av1', 'opus',
+            '[tgx]', 'hevc', 'webrip', 'hdr', 'av1', 'opus', 'amazon', 'amzn'
             '5.1', 'h265', 'x265', 'x264', 'h264', 'yify',
             'dvdrip', 'xvid', 'sfm', 'ac1', 'ac2', 'ac3',
             'fov', 'vfua', 'galaxyrg', 'sucessfulcrab', 
