@@ -271,22 +271,23 @@ def rename_files_in_directory(directory, prefix=None, postfix=None, remove_str=N
         if process_dirs:
             for dirname in dirs:
                 new_dirname = process_filename(dirname, prefix, postfix, remove_str, perform_clean, is_dir=True)
+                
                 if new_dirname != dirname:
                     old_dirpath = os.path.join(root, dirname)
                     new_dirpath = os.path.join(root, new_dirname)
 
-                if os.path.exists(new_dirpath):
-                    print(f"{Fore.YELLOW}  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
-                    continue
-                if dry_run:
-                    print(f"{Style.DIM} - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
-                else:
-                    try:
-                        os.rename(old_dirpath, new_dirpath)
-                        print(f"{Fore.GREEN} - Renamed DIR: '{dirname}' -> '{new_dirname}'")
-                        renamed_dirs_count += 1
-                    except OSError as e:
-                        print(f"{Fore.RED}  - Error renaming directory '{dirname}': {e}")
+                    if os.path.exists(new_dirpath):
+                        print(f"{Fore.YELLOW}  - Skipped DIR (conflict): '{dirname}' -> '{new_dirname}' would overwrite.")
+                        continue
+                    if dry_run:
+                        print(f"{Style.DIM} - [DRY RUN] Would rename DIR: '{dirname}' -> '{new_dirname}'")
+                    else:
+                        try:
+                            os.rename(old_dirpath, new_dirpath)
+                            print(f"{Fore.GREEN} - Renamed DIR: '{dirname}' -> '{new_dirname}'")
+                            renamed_dirs_count += 1
+                        except OSError as e:
+                            print(f"{Fore.RED}  - Error renaming directory '{dirname}': {e}")
                 
 
     print("-" * 20)
