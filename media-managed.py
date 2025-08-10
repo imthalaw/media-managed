@@ -166,6 +166,10 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
 
     # 4. Perform a general cleanup of common unwanted characters
     if perform_clean:
+        # Removing wesite URLs (e.g., www.example.com, example.net)
+        # Has to happen first in function.
+        url_pattern = r'\b(www\.)?[\w-]+\.(com|net|org|biz|info|tv|me|io|us|ca|uk)\b'
+        new_name_part = re.sub(url_pattern, '', new_name_part, flags=re.IGNORECASE)
         # Replace characters like _, ., - with a space
         new_name_part = re.sub(r'[_.\-]+', ' ', new_name_part)
 
@@ -185,7 +189,7 @@ def process_filename(filename, prefix=None, postfix=None, remove_str=None, perfo
         chars_to_remove = [
             'web', 'webrip', 'web-dl', 'blu', 'ray', 'blueray', 'bluray', 'dd5.1', 'cmrg',
             '[tgx]', 'hevc', 'webrip', 'hdr', 'av1', 'opus', 'amazon', 'amzn'
-            '5.1', 'h265', 'x265', 'x264', 'h264', 'yify',
+            '5.1', 'h265', 'x265', 'x264', 'h264', 'yify', 'yts', 'mx'
             'dvdrip', 'xvid', 'sfm', 'ac1', 'ac2', 'ac3',
             'fov', 'vfua', 'galaxyrg', 'sucessfulcrab', 
         ]
